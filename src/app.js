@@ -17,7 +17,7 @@ app.use(cors()); // Enable CORS
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Verify MONGO_URI
-const mongoURI = process.env.MONGO_URI || '';
+const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ntc_api';
 if (!mongoURI) {
     console.error("Error: MONGO_URI is not defined in .env file.");
     process.exit(1);
