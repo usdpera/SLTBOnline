@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 
-const routeSchema = new mongoose.Schema({
-  origin: { type: String, required: true },
-  destination: { type: String, required: true },
-  distance: { type: Number, required: true },
-});
+const RouteSchema = new mongoose.Schema({
+    Origin: { type: String, required: true },
+    Destination: { type: String, required: true },
+    Distance: { type: String, required: true },
+    Name: { type: String, required: true },
+    RouteID: { type: String, required: true, unique: true },
+}, { timestamps: true });
 
-module.exports = mongoose.model('Route', routeSchema);
+module.exports = mongoose.model('Route', RouteSchema);
