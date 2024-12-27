@@ -9,12 +9,17 @@ const app = express();
 // Debugging log
 //console.log("Initializing app...");
 
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Example: Verify server works
+app.get('/', (req, res) => {
+    res.send('API is running...');
+});
+
 // Middleware
 app.use(express.json()); // Parse incoming JSON requests
 app.use(cors()); // Enable CORS
 
-// Swagger API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Verify MONGO_URI
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ntc_api';
