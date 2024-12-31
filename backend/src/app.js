@@ -56,10 +56,21 @@ app.use('/buses', busRoutes);
 app.use('/routes', routeRoutes);
 app.use('/dashboard', dashboardRoutes);
 
-// Database Connection
+// // Database Connection
+// mongoose
+//     .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ntc_api', { useNewUrlParser: true, useUnifiedTopology: true })
+//     .then(() => console.log('MongoDB connected...'))
+//     .catch((err) => {
+//         console.error('MongoDB connection failed:', err.message);
+//         process.exit(1);
+//     });
+
+// Database Connection to MongoDB Atlas
+const uri = process.env.MONGO_URI || 'mongodb+srv://ushandperera:<db_password>@sltbonlinemongodbcluste.ztevt.mongodb.net/?retryWrites=true&w=majority&appName=SLTBOnlineMongoDBCluster';
+
 mongoose
-    .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ntc_api', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected...'))
+    .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB Atlas connected successfully!'))
     .catch((err) => {
         console.error('MongoDB connection failed:', err.message);
         process.exit(1);
