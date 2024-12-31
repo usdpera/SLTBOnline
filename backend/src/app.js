@@ -66,7 +66,7 @@ app.use('/dashboard', dashboardRoutes);
 //     });
 
 // Database Connection to MongoDB Atlas
-const uri = process.env.MONGO_URI || 'mongodb+srv://ushandperera:<db_password>@sltbonlinemongodbcluste.ztevt.mongodb.net/?retryWrites=true&w=majority&appName=SLTBOnlineMongoDBCluster';
+const uri = process.env.MONGO_URI || 'mongodb+srv://ushandperera:6869169@sltbonlinemongodbcluste.ztevt.mongodb.net/?retryWrites=true&w=majority&appName=SLTBOnlineMongoDBCluster';
 
 mongoose
     .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
