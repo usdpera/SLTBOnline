@@ -27,4 +27,5 @@ userSchema.pre('save', async function (next) {
     }
 });
 
-module.exports = mongoose.model('User', userSchema);
+// Avoid OverwriteModelError by checking if the model already exists
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

@@ -1,39 +1,57 @@
-// import React from 'react';
-// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// import Login from './features/auth/login';
-// import Dashboard from './pages/Dashboard';
-// //import Navbar from './components/Navbar';
-// import PrivateRoute from './components/PrivateRoute';
+import React, { useEffect, useState } from 'react';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import Footer from './components/Footer';
+import LoginPage from './pages/LoginPage';
+import Home from './pages/Home';
+import CommuterRoutes from './pages/Commuter/CommuterRoutes';
+import OperatorRoutes from './pages/Operator/OperatorRoutes';
+import AdminRoutes from './pages/Admin/AdminRoutes';
 
-// function App() {
-//   return (
-//     <Router>
-//       <Routes>
-//         <Route path="/login" element={<Login />} />
-//         <Route path="/" element={<Navigate to="/login" />} />
-//         <PrivateRoute path="/dashboard" component={Dashboard} />
-//         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-//       </Routes>
-//     </Router>
-//   );
-// }
-
-// export default App;
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import PrivateRoute from './components/PrivateRoute'; // Assuming it's in components folder
-import Login from './features/auth/login'; // Adjust path if needed
-import Dashboard from './pages/Dashboard'; // Adjust path if needed
+import { checkAuth } from './services/authService'; // Custom hook or function to check JWT validity
 
 const App = () => {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate for redirection
+
+  useEffect(() => {
+    const userData = checkAuth(); // Check user login status and role
+    setUser(userData);
+    if (!userData) {
+      navigate('/login'); // Redirect to login page if no user data found
+    }
+  }, [navigate]);
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<PrivateRoute element={<Dashboard />} />} />
-        {/* Add more routes as needed */}
-      </Routes>
-    </Router>
+    <>
+      <Header />
+      <Sidebar user={user} />
+      <div style={{ marginLeft: '240px', padding: '20px' }}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Redirect to home page if user is not logged in */}
+          {user ? (
+            user.role === 'commuter' ? (
+              <Route path="/commuter/*" element={<CommuterRoutes />} />
+            ) : user.role === 'operator' ? (
+              <Route path="/operator/*" element={<OperatorRoutes />} />
+            ) : user.role === 'admin' ? (
+              <Route path="/admin/*" element={<AdminRoutes />} />
+            ) : (
+              <Route path="/" element={<Home />} />
+            )
+          ) : (
+            <Route path="/" element={<Home />} />
+          )}
+
+          {/* Fallback Route */}
+          <Route path="*" element={<div>404 - Page Not Found</div>} />
+        </Routes>
+      </div>
+      <Footer />
+    </>
   );
 };
 

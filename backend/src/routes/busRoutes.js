@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const Bus = require('../models/bus'); // Bus model
-const User = require('../models/user'); // User model for Operator validation
+const Bus = require('../models/Bus'); // Bus model
+const User = require('../models/User'); // User model for Operator validation
 const Route = require('../models/Route'); // Route model for RouteID validation
 const { authenticateUser } = require('../middlewares/authMiddleware'); // Authentication middleware
 const { authorizeRoles } = require('../middlewares/roleMiddleware'); // Role-based authorization middleware

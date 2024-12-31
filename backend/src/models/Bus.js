@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Define your Bus schema
 const BusSchema = new mongoose.Schema(
     {
         BusNumber: { type: String, required: true, unique: true },
@@ -11,4 +12,5 @@ const BusSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model('Bus', BusSchema);
+// Avoid OverwriteModelError by checking if the model already exists
+module.exports = mongoose.models.Bus || mongoose.model('Bus', BusSchema);

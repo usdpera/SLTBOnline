@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs'); // Library for password hashing and comparison
 const router = express.Router();
-const User = require('../models/user'); // Import the User model
+const User = require('../models/User'); // Import the User model
 const { authenticateUser } = require('../middlewares/authMiddleware'); // Authentication middleware
 const { authorizeRoles } = require('../middlewares/roleMiddleware'); // Role-based authorization middleware
 
@@ -178,7 +178,7 @@ router.post('/login', async (req, res) => {
         );
 
         // 5. Send success response with token
-        res.status(200).json({ message: 'Login successful.', token });
+        res.status(200).json({ message: 'Login successful.', token, role: user.role });
     } catch (err) {
         // Catch and send any unexpected errors
         res.status(500).json({ error: err.message });
@@ -345,6 +345,21 @@ router.delete('/delete-all',authorizeRoles('admin'), async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+router.get('/dashboard', authenticateUser, (req, res) => {
+    const { role } = req.user;
+
+    if (role === 'admin') {
+        res.json({ message: 'Welcome Admin! Here is your dashboard.' });
+    } else if (role === 'operator') {
+        res.json({ message: 'Welcome Operator! Here is your dashboard.' });
+    } else if (role === 'commuter') {
+        res.json({ message: 'Welcome Commuter! Here is your dashboard.' });
+    } else {
+        res.status(403).json({ message: 'Forbidden: Invalid role.' });
+    }
+});
+
 
 // Export the router to use in the main app
 module.exports = router;

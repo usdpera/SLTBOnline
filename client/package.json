@@ -8,6 +8,7 @@
     "@mui/material": "^6.3.0",
     "@svgr/plugin-svgo": "^8.1.0",
     "axios": "^1.7.9",
+    "client": "file:",
     "cra-template": "1.2.0",
     "cross-env": "^7.0.3",
     "react": "^19.0.0",
