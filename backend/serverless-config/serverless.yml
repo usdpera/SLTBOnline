@@ -1,0 +1,37 @@
+service: sltb-online-express-api  # Name of the service (can be customized)
+
+provider:
+  name: aws
+  runtime: nodejs14.x  # Node.js runtime version for Lambda
+  stage: dev  # Environment stage (you can change to 'prod' when ready)
+  region: us-east-1  # AWS region where Lambda will be deployed
+
+functions:
+  api:
+    handler: handler.api  # Points to the exported handler function in your backend
+    events:
+      - http:
+          path: /{proxy+}  # Catch-all path to forward all requests
+          method: any  # Allow all HTTP methods (GET, POST, etc.)
+          cors: true  # Enable CORS
+
+plugins:
+  - serverless-offline  # Allows you to run the service locally for testing
+
+custom:
+  serverless-offline:
+    httpPort: 3000  # Port for local testing
+
+resources:
+  Resources:
+    ApiGatewayMethodAny:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        AuthorizationType: NONE
+        HttpMethod: ANY
+        ResourceId:
+          Fn::GetAtt:
+            - ApiGatewayRestApi
+            - RootResourceId
+        RestApiId:
+          Ref: ApiGatewayRestApi
