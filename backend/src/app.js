@@ -2,37 +2,28 @@ const express = require('express');
 const mongoose = require('mongoose'); 
 const cors = require('cors'); 
 const { swaggerUi, swaggerSpec } = require('./config/swagger'); 
-require('dotenv').config(); 
+require('dotenv').config();
 
 const app = express();
-
-// Socket.IO setup
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-
-// Swagger API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Middleware
 app.use(express.json()); 
 app.use(cors()); 
 
-//Mock payment
-const paymentRoutes = require('./routes/paymentRoutes');
-app.use('/payment', paymentRoutes);
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Booking routes
-const bookingRoutes = require('./routes/bookingRoutes');
-app.use('/bookings', bookingRoutes);
+// Socket.IO setup for real-time seat reservation
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
-// Socket.IO event listener (real-time seat reservation)
+// Socket.IO event listener
 io.on('connection', (socket) => {
     console.log('A user connected');
-
+    
     socket.on('reserve-seat', (data) => {
         console.log('Seat reserved:', data);
-        // You can now broadcast the seat reservation status to other users
-        io.emit('seat-update', data); // Broadcast the seat availability
+        io.emit('seat-update', data); // Broadcast seat update to all users
     });
 
     socket.on('disconnect', () => {
@@ -45,31 +36,27 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
-// Routes
-const authRoutes = require('./routes/authRoutes');
-const busRoutes = require('./routes/busRoutes');
-const routeRoutes = require('./routes/routeRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
+// Import routes and register them
+const routes = {
+    auth: require('./routes/authRoutes'),
+    buses: require('./routes/busRoutes'),
+    routes: require('./routes/routeRoutes'),
+    dashboard: require('./routes/dashboardRoutes'),
+    payment: require('./routes/paymentRoutes'),
+    bookings: require('./routes/bookingRoutes')
+};
 
-app.use('/auth', authRoutes);
-app.use('/buses', busRoutes);
-app.use('/routes', routeRoutes);
-app.use('/dashboard', dashboardRoutes);
+Object.entries(routes).forEach(([path, route]) => app.use(`/${path}`, route));
 
-// // Database Connection
-// mongoose
-//     .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ntc_api', { useNewUrlParser: true, useUnifiedTopology: true })
-//     .then(() => console.log('MongoDB connected...'))
-//     .catch((err) => {
-//         console.error('MongoDB connection failed:', err.message);
-//         process.exit(1);
-//     });
-
-// Database Connection to MongoDB Atlas
-const uri = process.env.MONGO_URI || 'mongodb+srv://ushandperera:6869169@sltbonlinemongodbcluste.ztevt.mongodb.net/?retryWrites=true&w=majority&appName=SLTBOnlineMongoDBCluster';
+// MongoDB connection using URI from .env
+const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
+    console.error('Error: MONGO_URI is not defined in .env file.');
+    process.exit(1); // Exit if MongoDB URI is not configured
+}
 
 mongoose
-    .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .connect(mongoURI)
     .then(() => console.log('MongoDB Atlas connected successfully!'))
     .catch((err) => {
         console.error('MongoDB connection failed:', err.message);
@@ -77,8 +64,9 @@ mongoose
     });
 
 // Start the server with Socket.IO integration
-http.listen(process.env.PORT || 3000, () => {
-    console.log(`Server running on port ${process.env.PORT || 3000}`);
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
-module.exports = app; 
+module.exports = app;

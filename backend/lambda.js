@@ -1,75 +1,75 @@
 const express = require('express');
-const mongoose = require('mongoose'); // For database connection
-const cors = require('cors'); // For handling CORS issues
-const { swaggerUi, swaggerSpec } = require('./src/config/swagger'); // Swagger configuration
-require('dotenv').config(); // To use environment variables (AWS Lambda uses environment variables configured in the Lambda settings)
+const mongoose = require('mongoose');
+const cors = require('cors');
+const { swaggerUi, swaggerSpec } = require('./config/swagger');
+require('dotenv').config();
 const serverless = require('serverless-http');
 
-
 const app = express();
-
-// Swagger API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Example: Verify server works
-app.get('/', (req, res) => {
-    res.send('API is running...');
-});
 
 // Middleware
 app.use(express.json()); // Parse incoming JSON requests
 app.use(cors()); // Enable CORS
 
-// Verify MONGO_URI
-const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ntc_api';
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Health check route (useful for Lambda)
+app.get('/', (req, res) => {
+    res.send('API is running...');
+});
+
+// Dynamically import and register routes (same as new app.js)
+const routes = {
+    auth: require('./src/routes/authRoutes'),
+    buses: require('./src/routes/busRoutes'),
+    routes: require('./src/routes/routeRoutes'),
+    dashboard: require('./src/routes/dashboardRoutes'),
+    payment: require('./src/routes/paymentRoutes'),
+    bookings: require('./src/routes/bookingRoutes')
+};
+
+// Dynamically register routes
+Object.entries(routes).forEach(([path, route]) => app.use(`/${path}`, route));
+
+// MongoDB connection using the environment variable
+const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
     console.error("Error: MONGO_URI is not defined in .env file.");
     process.exit(1); // Exit if MongoDB URI is not configured
 }
 
-// Import Routes
-const authRoutes = require('./src/routes/authRoutes');
-const busRoutes = require('./src/routes/busRoutes');
-const routeRoutes = require('./src/routes/routeRoutes');
-const dashboardRoutes = require('./src/routes/dashboardRoutes');
-
-// Routes
-console.log("Connecting auth routes...");
-app.use('/auth', authRoutes);
-console.log("Connecting bus routes...");
-app.use('/buses', busRoutes);
-console.log("Connecting route routes...");
-app.use('/routes', routeRoutes);
-console.log("Connecting dashboard routes...");
-app.use('/dashboard', dashboardRoutes);
-
-// Database Connection
-// MongoDB connection will still work on AWS Lambda if configured correctly
 mongoose
-    .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected...'))
+    .connect(mongoURI)
+    .then(() => console.log('MongoDB Atlas connected successfully!'))
     .catch((err) => {
         console.error('MongoDB connection failed:', err.message);
         process.exit(1);
     });
 
-// Default Route
-// app.get('/', (req, res) => { 
-//   res.send('Welcome to the National Transport Commission API!'); 
-// });
-// Keeping this if needed for health checks, but it's already defined earlier
+// Placeholder for real-time seat reservation (Socket.IO events are not supported directly in Lambda)
+app.post('/socket-events', (req, res) => {
+    const { event, data } = req.body;
+    console.log(`Received event: ${event} with data:`, data);
 
-// Server Initialization
-// The following block is unnecessary for AWS Lambda as Lambda handles server lifecycle
-// const port = process.env.PORT || 3000;
-// app.listen(port, () => {
-//     console.log(Server is running on port ${port});
-// });
+    // Event handling logic (e.g., for seat reservations)
+    if (event === 'reserve-seat') {
+        console.log('Seat reserved:', data);
+    }
 
+    res.status(200).send({ message: 'Event processed successfully' });
+});
+
+// Lambda handler using serverless-http
 module.exports.handler = serverless(app, {
     request: (request, event, context) => {
-        if (event.body) {
-            request.body = JSON.parse(event.body);
+        try {
+            if (event.body) {
+                request.body = JSON.parse(event.body);
+            }
+        } catch (error) {
+            console.error('Error parsing body:', error);
+            request.body = {}; // Fallback to an empty object
         }
-    }
+    },
 });
