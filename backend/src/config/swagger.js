@@ -11,7 +11,7 @@ const options = {
         },
         servers: [
             {
-                url: 'http://localhost:3000',
+                url: 'https://o7nmx44dkd.execute-api.ap-southeast-1.amazonaws.com/prod',
             },
         ],
         components: {
