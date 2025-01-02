@@ -1,8 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { swaggerUi, swaggerSpec } = require('./config/swagger');
+const { swaggerUi, swaggerSpec } = require('./src/config/swagger');
 require('dotenv').config();
+const swaggerJsDoc = require('swagger-jsdoc');
 const serverless = require('serverless-http');
 
 const app = express();
@@ -14,11 +15,15 @@ app.use(cors()); // Enable CORS
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.get('./src/config/swagger.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerDocs);
+});
 // Health check route (useful for Lambda)
 app.get('/', (req, res) => {
     res.send('API is running...');
 });
-
+//
 // Dynamically import and register routes (same as new app.js)
 const routes = {
     auth: require('./src/routes/authRoutes'),

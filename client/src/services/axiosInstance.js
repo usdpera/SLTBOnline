@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:3000/', // Backend API base URL
+  //baseURL: 'http://localhost:3000/', // Backend API base URL
+  baseURL: 'https://o7nmx44dkd.execute-api.ap-southeast-1.amazonaws.com/prod/', 
   headers: {
     'Content-Type': 'application/json',
   },
